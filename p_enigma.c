@@ -93,7 +93,7 @@ void main(){
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
     /* Set "second" enigma machine */
-    vSetPartitionParams(&xEnigmaParams[1], 40);
+    vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
 
     /* encrypt */
     enigma(pMsg[0], pReturnBuff[0], &xEnigmaParams[0]);
@@ -103,7 +103,7 @@ void main(){
 
     /* Decrypt */
     vSetEnigma(&xEnigmaParams[0], iNodes);
-    vSetPartitionParams(&xEnigmaParams[1], 40);
+    vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
 
     enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
     enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
