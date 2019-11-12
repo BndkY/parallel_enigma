@@ -1,5 +1,6 @@
 #include "enigma.h"
 #include <stdlib.h>
+#include <omp.h> 
 
 #define MAX_MSG_LENGTH  256
 #define ALPHA_LENGTH  26
