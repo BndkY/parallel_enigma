@@ -77,7 +77,7 @@ void main(){
     char *pReturnBuff[N_MACHINES_MAX];
     
     int iMsgLength = 0;
-    int iNodes = 2;
+    int iNodes = 4;
 
     char cReturnBuff[MAX_MSG_LENGTH];
     char cMsg[MAX_MSG_LENGTH] = "wEiycgPObCTEakhFlWRBMyfSQwIXhYaqkukcaytC";
@@ -86,27 +86,40 @@ void main(){
 
     pMsg[0] = &cMsg[0];
     pMsg[1] = &cMsg[(iMsgLength/iNodes)-1];
+    pMsg[2] = &cMsg[(iMsgLength/iNodes)*2-1];
+    pMsg[3] = &cMsg[(iMsgLength/iNodes)*3-1];
 
     pReturnBuff[0] = &cReturnBuff[0];
     pReturnBuff[1] = &cReturnBuff[(iMsgLength/iNodes)-1];
+    pReturnBuff[2] = &cReturnBuff[(iMsgLength/iNodes)*2-1];
+    pReturnBuff[3] = &cReturnBuff[(iMsgLength/iNodes)*3-1];
 
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
     /* Set "second" enigma machine */
     vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
+    vSetPartitionParams(&xEnigmaParams[2], (iMsgLength/iNodes)*2);
+    vSetPartitionParams(&xEnigmaParams[3], (iMsgLength/iNodes)*3);
 
     /* encrypt */
     enigma(pMsg[0], pReturnBuff[0], &xEnigmaParams[0]);
     enigma(pMsg[1], pReturnBuff[1], &xEnigmaParams[1]);
+    enigma(pMsg[2], pReturnBuff[2], &xEnigmaParams[2]);
+    enigma(pMsg[3], pReturnBuff[3], &xEnigmaParams[3]);
 
     printf("%s\n",pReturnBuff[0]);
 
     /* Decrypt */
     vSetEnigma(&xEnigmaParams[0], iNodes);
     vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
+    vSetPartitionParams(&xEnigmaParams[2], (iMsgLength/iNodes)*2);
+    vSetPartitionParams(&xEnigmaParams[3], (iMsgLength/iNodes)*3);
+    
 
     enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
     enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
+    enigma(pReturnBuff[2], pMsg[2], &xEnigmaParams[2]);
+    enigma(pReturnBuff[3], pMsg[3], &xEnigmaParams[3]);
 
     printf("%s\n",pMsg[0]);
 }
