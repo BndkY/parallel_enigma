@@ -121,7 +121,7 @@ char scramble(char c, Params *p)
 			else if (c==p->plug[i+1])
 				c=p->plug[i];
 		}
-#if DEBUG_ON
+#if DEBUG_FULL_ON
 		printf("Enigma params Scramble\n %i, %i, %i\n\n", p->pos[0], p->pos[1], p->pos[2]);
 #endif
 

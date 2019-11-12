@@ -86,75 +86,94 @@ void main(){
 
     iMsgLength = strlen(cMsg);
 
-    int iNodes = omp_get_num_threads();
-    // int iNodes = 2;
+    int iNodes = N_MACHINES_MAX;
 
 #if DEBUG_ON
-    printf("Nb of nodes: %d\n",iNodes);
+    printf("Nb of nodes: %i\nMsg Length %i\nPart Size %i\n",iNodes, iMsgLength, (iMsgLength/iNodes));
 #endif
 
     pMsg[0] = &cMsg[0];
-    pMsg[1] = &cMsg[(iMsgLength/iNodes)-1];
-
     pReturnBuff[0] = &cReturnBuff[0];
-    pReturnBuff[1] = &cReturnBuff[(iMsgLength/iNodes)-1];
 
-    /* Encrypt pragma */
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
-    # pragma omp parallel
-    {
-        //put xEnigmaParams inside here 
-        int iID, iNbThreads;
-
-        iID = omp_get_thread_num();
-        iNbThreads = omp_get_num_threads();
+    for(int iI = 1; iI<iNodes; iI++){
 #if DEBUG_ON
-        printf("Entering Node: %d\n",iID);
+    printf("Start bytes: %i\n",((iMsgLength/iNodes)*iI-1));
 #endif
-        /* Set "iID" enigma machine */
-        if (iID != 0){
-            vSetPartitionParams(&xEnigmaParams[iID], (iMsgLength/iNbThreads));
-        }
-
-        /* pragma barrier? */
-        // #pragma omp barrier
-        //Run enigma machine
-        enigma(pMsg[iID], pReturnBuff[iID], &xEnigmaParams[iID]);
+        pMsg[iI] = &cMsg[(iMsgLength/iNodes)*iI-1];
+        pReturnBuff[iI] = &cReturnBuff[(iMsgLength/iNodes)*iI-1];
+        // vSetPartitionParams(&xEnigmaParams[iI], (iMsgLength/iNodes)*iI);
     }
 
-    // /* Set "second" enigma machine */
-    // vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
-
-    // /* encrypt */
-    // enigma(pMsg[0], pReturnBuff[0], &xEnigmaParams[0]);
-    // enigma(pMsg[1], pReturnBuff[1], &xEnigmaParams[1]);
+    
+    
+    /* Encrypt pragma */
+    # pragma omp parallel
+    {
+        int iID, iNbThreads;
+        // Params xEnigmaParams;
+        iID = omp_get_thread_num();
+#if DEBUG_ON
+        printf("Entering Node: %d\nLength used %i\n",iID, ((iMsgLength/iNodes)*iID));
+#endif
+        if (iID != 0)
+        {
+            vSetPartitionParams(&xEnigmaParams[iID], (iMsgLength/iNodes)*iID);
+        }
+        
+        //Run enigma machine
+        enigma(pMsg[iID],  pReturnBuff[iID], &xEnigmaParams[iID]);
+    }
 
     printf("%s\n",pReturnBuff[0]);
 
     /* Decrypt pragma */
     vSetEnigma(&xEnigmaParams[0], iNodes);
-
-    # pragma omp parallel
+       # pragma omp parallel
     {
         int iID, iNbThreads;
-
+        // Params xEnigmaParams;
         iID = omp_get_thread_num();
-        iNbThreads = omp_get_num_threads();
-
-        /* Set "iID" enigma machine */
-        if (iID != 0){
-            vSetPartitionParams(&xEnigmaParams[iID], (iMsgLength/iNbThreads));
+#if DEBUG_ON
+        printf("Entering Node: %d\n",iID);
+#endif
+        if (iID != 0)
+        {
+            vSetPartitionParams(&xEnigmaParams[iID], (iMsgLength/iNodes)*iID);
         }
-
+        
         //Run enigma machine
         enigma(pReturnBuff[iID], pMsg[iID], &xEnigmaParams[iID]);
     }
 
-    // vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
-
-    // enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
-    // enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
-
     printf("%s\n",pMsg[0]);
+
+    // vSetEnigma(&xEnigmaParams[0], iNodes);
+
+    // # pragma omp parallel
+    // {
+    //     int iID, iNbThreads;
+    //     Params xEnigmaParams;
+
+    //     iID = omp_get_thread_num();
+    //     iNbThreads = omp_get_num_threads();
+
+
+    //     vSetEnigma(&xEnigmaParams, iNodes);
+    //     /* Set "iID" enigma machine */
+    //     if (iID != 0){
+    //         vSetPartitionParams(&xEnigmaParams, (iMsgLength/iNbThreads));
+    //     }
+
+    //     //Run enigma machine
+    //     enigma(pReturnBuff[iID], pMsg[iID], &xEnigmaParams);
+    // }
+
+    // // vSetPartitionParams(&xEnigmaParams[1], (iMsgLength/iNodes));
+
+    // // enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
+    // // enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
+
+    // printf("%s\n",pMsg[0]);
 }
