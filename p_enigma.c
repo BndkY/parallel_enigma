@@ -80,7 +80,11 @@ void main(){
     int iNodes = 4;
 
     char cReturnBuff[MAX_MSG_LENGTH];
-    char cMsg[MAX_MSG_LENGTH] = "wEiycgPObCTEakhFlWRBMyfSQwIXhYaqkukcaytC";
+    char cMsg[MAX_MSG_LENGTH];
+        /* read string from file */
+    FILE *f = fopen("enigma.txt", "r");
+    fgets(cMsg, MAX_MSG_LENGTH, f);
+    fclose(f);
 
     iMsgLength = strlen(cMsg);
 
