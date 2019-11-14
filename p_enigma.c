@@ -241,9 +241,18 @@ void main(){
 //         enigma(pReturnBuff[iID], pMsg[iID], &xEnigmaParams[iID]);
 //     }
 
-    enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
-    enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
-    enigma(pReturnBuff[2], pMsg[2], &xEnigmaParams[2]);
+    // #pragma omp parallel for
+    // for (int iI = 0; iI<iNodes; iI++){
+    //     if(iI != (iNodes-1)){
+    //         pEnigma(pReturnBuff[iI], pMsg[iI], ulPartSize, &xEnigmaParams[iI]);
+    //     }else{
+    //         enigma(pReturnBuff[iI], pMsg[iI], &xEnigmaParams[iI]);
+    //     }
+    // }
+
+    pEnigma(pReturnBuff[0], pMsg[0], ulPartSize, &xEnigmaParams[0]);
+    pEnigma(pReturnBuff[1], pMsg[1], ulPartSize, &xEnigmaParams[1]);
+    pEnigma(pReturnBuff[2], pMsg[2], ulPartSize, &xEnigmaParams[2]);
     enigma(pReturnBuff[3], pMsg[3], &xEnigmaParams[3]);
 
 
