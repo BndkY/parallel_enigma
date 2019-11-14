@@ -102,9 +102,6 @@ void main(){
     FILE *f = fopen("enigma.txt", "r");
     fgets(cMsg, MAX_MSG_LENGTH, f);
     fclose(f);
-    // #if DEBUG_ON
-    // printf("String read: %s\n", cMsg);
-    // #endif
 
 
     omp_set_num_threads(N_MACHINES_MAX);
@@ -142,19 +139,27 @@ void main(){
     }
 #endif
 
-    #pragma omp parallel for schedule(auto)
-    for (int iI = 0; iI<iNodes; iI++){
-        char cPVTBuff[MAX_MSG_LENGTH] = {0};
+    enigma(pMsg[0], pReturnBuff[0], &xEnigmaParams[0]);
+    enigma(pMsg[1], pReturnBuff[1], &xEnigmaParams[1]);
+    enigma(pMsg[2], pReturnBuff[2], &xEnigmaParams[2]);
+    enigma(pMsg[3], pReturnBuff[3], &xEnigmaParams[3]);
 
-        if(iI == iNodes-1){
-            enigma(pMsg[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
-        }else
-        {
-            pEnigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        }
+    // #pragma omp parallel for schedule(auto)
+    // for (int iI = 0; iI<iNodes; iI++){
+    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
 
-        strcpy(pReturnBuff[iI], &cPVTBuff[0]);
-    }
+    //     if(iI == iNodes-1){
+    //         enigma(pMsg[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
+    //     }else
+    //     {
+    //         pEnigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+    //     }
+
+    //     strcpy(pReturnBuff[iI], &cPVTBuff[0]);
+    // }
+
+
+
     //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
 
 //         if (iI != 0){
@@ -221,18 +226,25 @@ void main(){
         }   
 #endif
 
-    #pragma omp parallel for schedule(auto)
-    for (int iI = 0; iI<iNodes; iI++){
-        char cPVTBuff[MAX_MSG_LENGTH] = {0};
 
-        if(iI == iNodes-1){
-            enigma(pReturnBuff[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
-        }else
-        {
-            pEnigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        }
-        strcpy(pMsg[iI], &cPVTBuff[0]);
-    }
+    enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
+    enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
+    enigma(pReturnBuff[2], pMsg[2], &xEnigmaParams[2]);
+    enigma(pReturnBuff[3], pMsg[3], &xEnigmaParams[3]);
+
+
+    // #pragma omp parallel for schedule(auto)
+    // for (int iI = 0; iI<iNodes; iI++){
+    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
+
+    //     if(iI == iNodes-1){
+    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
+    //     }else
+    //     {
+    //         pEnigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+    //     }
+    //     strcpy(pMsg[iI], &cPVTBuff[0]);
+    // }
     // #pragma omp parallel for schedule(auto)
     // for (int iI = 0; iI<iNodes; iI++)
     // {
