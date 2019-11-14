@@ -81,7 +81,8 @@ void main(){
 
     char cReturnBuff[MAX_MSG_LENGTH];
     char cMsg[MAX_MSG_LENGTH];
-        /* read string from file */
+    
+    /* read string from file */
     FILE *f = fopen("enigma.txt", "r");
     fgets(cMsg, MAX_MSG_LENGTH, f);
     fclose(f);
@@ -125,5 +126,11 @@ void main(){
     enigma(pReturnBuff[2], pMsg[2], &xEnigmaParams[2]);
     enigma(pReturnBuff[3], pMsg[3], &xEnigmaParams[3]);
 
-    printf("%s\n",pMsg[0]);
+    /* Write to output file */
+    FILE *fp = fopen("enigmaOut.txt", "ab");
+    if (fp != NULL)
+    {
+        fputs(pMsg[0], fp);
+        fclose(fp);
+    }
 }
