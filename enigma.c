@@ -129,13 +129,13 @@ char scramble(char c, Params *p)
 }
 
 /*take a string, return encoded string*/
-void enigma(char *in, char *out,size_t ulSize, Params *p)
+void enigma(char *in, char *out, Params *p)
 {
-  int j;
+  size_t j;
 #if DEBUG_ON
-	printf("[Enigma]Partition size %lu\n", (size_t) ulSize);
+	printf("[Enigma]Partition size %lu\n", strlen(in));
 #endif
-  for(j = 0; j < ulSize; j++)
+  for(j = 0; j < strlen(in); j++)
   out[j] = scramble(in[j], p);
   out[j] = '\0';
 }

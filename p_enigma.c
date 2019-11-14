@@ -1,11 +1,26 @@
 #include "p_enigma.h"
 
-void vSetPartitionParams(Params *pParams, int iLength){
+/*take a string, return encoded string*/
+void pEnigma(char *in, char *out,size_t ulSize, Params *p)
+{
+  size_t j;
+#if DEBUG_ON
+	printf("[PEnigma]Partition size %lu\n", (size_t) ulSize);
+#endif
+  for(j = 0; j < ulSize; j++)
+  out[j] = scramble(in[j], p);
+  out[j] = '\0';
+#if DEBUG_ON
+	printf("[PEnigma]Final Index %lu\n", (size_t) j);
+#endif
+}
+
+void vSetPartitionParams(Params *pParams, size_t iLength){
     div_t xRotor0;
     div_t xRotor1;
 
 #if DEBUG_ON
-    printf("[setPart]rcv length: %d\n", iLength);
+    printf("[setPart]rcv length: %lu\n", iLength);
 #endif
 
     /* Verif how many times we went through the whole alphabet */
@@ -116,25 +131,46 @@ void main(){
         pReturnBuff[iI] = &cReturnBuff[ulPartSize*iI-1];
     }
 
+    // #pragma omp parallel for schedule(auto)
+    for (int iI = 1; iI<iNodes; iI++){
+            vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
+    }
+
+#if DEBUG_ON
+    for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
+        printf("[ENCRYPT]State after part set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
+    }
+#endif
+
     #pragma omp parallel for schedule(auto)
-    for (int iI = 0; iI<iNodes; iI++)
-    {
+    for (int iI = 0; iI<iNodes; iI++){
         char cPVTBuff[MAX_MSG_LENGTH] = {0};
 
-        if (iI != 0){
-            vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-            if (iI == (iNodes-1)){
-#if DEBUG_ON
-	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pMsg[iI]));
-#endif
-                enigma(pMsg[iI],  &cPVTBuff[0],(size_t) strlen(pMsg[iI]), &xEnigmaParams[iI]);
-            } else
-            {
-                enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-            }
-        } else{
-            enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+        if(iI == iNodes-1){
+            enigma(pMsg[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
+        }else
+        {
+            pEnigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
         }
+
+        strcpy(pReturnBuff[iI], &cPVTBuff[0]);
+    }
+    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
+
+//         if (iI != 0){
+//             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
+//             if (iI == (iNodes-1)){
+// #if DEBUG_ON
+// 	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pMsg[iI]));
+// #endif
+//                 enigma(pMsg[iI],  &cPVTBuff[0],(size_t) strlen(pMsg[iI]), &xEnigmaParams[iI]);
+//             } else
+//             {
+//                 enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+//             }
+//         } else{
+//             enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+//         }
 
         // if (iI != 0){
         //     vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
@@ -143,12 +179,12 @@ void main(){
         //     enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
         // }
 
-        strcpy(pMsg[iI], &cPVTBuff[0]);
-    }
+    //     strcpy(pReturnBuff[iI], &cPVTBuff[0]);
+    // }
 
-    #if DEBUG_ON
+#if DEBUG_ON
     for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[ENCRYPT]State after part set of %d: %d %d %d\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
+        printf("[ENCRYPT]State after encrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
     }
 #endif
     
@@ -175,43 +211,60 @@ void main(){
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
     // #pragma omp parallel for
-    // for (int iI = 1; iI<iNodes; iI++)
-    // {
-    //     vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-    // }
-
-    #pragma omp parallel for schedule(auto)
-    for (int iI = 0; iI<iNodes; iI++)
-    {
-        char cPVTBuff[MAX_MSG_LENGTH];
-
-        if (iI != 0){
-            vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-            if (iI == (iNodes-1)){
-#if DEBUG_ON
-	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pReturnBuff[iI]));
-#endif
-                enigma(pReturnBuff[iI],  &cPVTBuff[0],(size_t) strlen(pReturnBuff[iI]), &xEnigmaParams[iI]);
-            } else
-            {
-                enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-            }
-        } else{
-            enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        }
-
-        // if (iI != 0){
-        //     vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-        //     enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        // } else{
-        //     enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        // }
-
-        strcpy(pMsg[iI], &cPVTBuff[0]);
+    for (int iI = 1; iI<iNodes; iI++){
+        vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
+
 #if DEBUG_ON
     for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[DECRYPT]State after part set of %d: %d %d %d\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
+        printf("[DECRYPT]State after part set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
+        }   
+#endif
+
+    #pragma omp parallel for schedule(auto)
+    for (int iI = 0; iI<iNodes; iI++){
+        char cPVTBuff[MAX_MSG_LENGTH] = {0};
+
+        if(iI == iNodes-1){
+            enigma(pReturnBuff[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
+        }else
+        {
+            pEnigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+        }
+        strcpy(pMsg[iI], &cPVTBuff[0]);
+    }
+    // #pragma omp parallel for schedule(auto)
+    // for (int iI = 0; iI<iNodes; iI++)
+    // {
+    //     char cPVTBuff[MAX_MSG_LENGTH];
+
+//         if (iI != 0){
+//             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
+//             if (iI == (iNodes-1)){
+// #if DEBUG_ON
+// 	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pReturnBuff[iI]));
+// #endif
+//                 enigma(pReturnBuff[iI],  &cPVTBuff[0],(size_t) strlen(pReturnBuff[iI]), &xEnigmaParams[iI]);
+//             } else
+//             {
+//                 enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+//             }
+//         } else{
+//             enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+//         }
+
+    //     if (iI != 0){
+    //         vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
+    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+    //     } else{
+    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
+    //     }
+
+    //     strcpy(pMsg[iI], &cPVTBuff[0]);
+    // }
+#if DEBUG_ON
+    for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
+        printf("[DECRYPT]State after decrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
         }   
 #endif
 

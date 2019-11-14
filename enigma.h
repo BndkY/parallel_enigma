@@ -25,4 +25,4 @@ typedef struct P
 /* Functions */
 
 char scramble(char c, Params *p);
-void enigma(char *in, char *out, size_t ulSize, Params *p);
+void enigma(char *in, char *out, Params *p);
