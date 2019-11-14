@@ -257,10 +257,12 @@ void main(){
 //         }
 //     }
 
-    #pragma omp parallel for schedule(auto)
+    #pragma omp parallel for schedule(static)
     for (int iI = 0; iI<iNodes; iI++){
         char cPVTBuff[MAX_MSG_LENGTH];
         Params xPVTEnigma = xEnigmaParams[iI];
+        FILE *fp = fopen("enigmaOut.txt", "ab");
+
         printf("TESTE NODE FOR NUMERO %i\n", iI);
         if(iI != (iNodes-1)){
             printf("Node interno %i\n", iI);
@@ -271,7 +273,13 @@ void main(){
         }
 
         #pragma omp critical
-        strcpy(pMsg[iI], &cPVTBuff[0]);
+
+        if (fp != NULL)
+        {
+            fputs(&cPVTBuff[0], fp);
+            fclose(fp);
+        }
+        // strcpy(pMsg[iI], &cPVTBuff[0]);
     }
 
     // pEnigma(pReturnBuff[0], pMsg[0], ulPartSize, &xEnigmaParams[0]);
@@ -333,11 +341,11 @@ void main(){
     //printf("%s\n",pMsg[0]);
     dTime =dTime - omp_get_wtime();
     /* Write output to file */
-    FILE *fp = fopen("enigmaOut.txt", "ab");
-    if (fp != NULL)
-    {
-        fputs(pMsg[0], fp);
-        fclose(fp);
-    }
+    // FILE *fp = fopen("enigmaOut.txt", "ab");
+    // if (fp != NULL)
+    // {
+    //     fputs(pMsg[0], fp);
+    //     fclose(fp);
+    // }
     printf("Runtime %lfs\n", dTime);
 }
