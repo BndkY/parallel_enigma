@@ -99,6 +99,7 @@ void main(){
     char cMsg[MAX_MSG_LENGTH] = {0};
 
     /* read string from file */
+    // FILE *f = fopen("~/Documents/enigma.txt", "r");
     FILE *f = fopen("enigma.txt", "r");
     fgets(cMsg, MAX_MSG_LENGTH, f);
     fclose(f);
@@ -128,7 +129,7 @@ void main(){
         pReturnBuff[iI] = &cReturnBuff[ulPartSize*iI-1];
     }
 
-    // #pragma omp parallel for schedule(auto)
+    #pragma omp parallel for schedule(auto)
     for (int iI = 1; iI<iNodes; iI++){
             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
@@ -215,7 +216,7 @@ void main(){
     /* Decrypt pragma */
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int iI = 1; iI<iNodes; iI++){
         vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
@@ -226,6 +227,19 @@ void main(){
         }   
 #endif
 
+
+//     # pragma omp parallel
+//     {
+//         int iID, iNbThreads;
+//         // Params xEnigmaParams;
+//         iID = omp_get_thread_num();
+// #if DEBUG_ON
+//         printf("Entering Node: %d\n",iID);
+// #endif
+        
+//         //Run enigma machine
+//         enigma(pReturnBuff[iID], pMsg[iID], &xEnigmaParams[iID]);
+//     }
 
     enigma(pReturnBuff[0], pMsg[0], &xEnigmaParams[0]);
     enigma(pReturnBuff[1], pMsg[1], &xEnigmaParams[1]);
@@ -279,20 +293,6 @@ void main(){
         printf("[DECRYPT]State after decrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
         }   
 #endif
-
-
-//     # pragma omp parallel
-//     {
-//         int iID, iNbThreads;
-//         // Params xEnigmaParams;
-//         iID = omp_get_thread_num();
-// #if DEBUG_ON
-//         printf("Entering Node: %d\n",iID);
-// #endif
-        
-//         //Run enigma machine
-//         enigma(pReturnBuff[iID], pMsg[iID], &xEnigmaParams[iID]);
-//     }
 
     //printf("%s\n",pMsg[0]);
     dTime =dTime - omp_get_wtime();
