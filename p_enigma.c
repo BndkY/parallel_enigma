@@ -257,7 +257,7 @@ void main(){
 //         }
 //     }
 
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for ordered schedule(static)
     for (int iI = 0; iI<iNodes; iI++){
         char cPVTBuff[MAX_MSG_LENGTH];
         Params xPVTEnigma = xEnigmaParams[iI];
@@ -272,7 +272,7 @@ void main(){
             enigma(pReturnBuff[iI], &cPVTBuff[0], &xPVTEnigma);
         }
 
-        #pragma omp critical
+        #pragma omp ordered
 
         if (fp != NULL)
         {
