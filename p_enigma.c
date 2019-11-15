@@ -86,21 +86,26 @@ void vSetEnigma(Params *pParams, int iNbMachines){
     }
 }
 
-void main(){
+void main(int argc,char* argv[]){
     double dTime = 0.0;
 
     Params xEnigmaParams[N_MACHINES_MAX];
     char *pMsg[N_MACHINES_MAX];
-    char *pReturnBuff[N_MACHINES_MAX];
     
     size_t iMsgLength = 0;
 
-    char cReturnBuff[MAX_MSG_LENGTH] = {0};
     char cMsg[MAX_MSG_LENGTH] = {0};
 
     /* read string from file */
-    // FILE *f = fopen("~/Documents/enigma.txt", "r");
-    FILE *f = fopen("enigma.txt", "r");
+    FILE *f;
+    FILE *fp;
+
+    if(argc >1){
+        f = fopen(argv[1], "r");
+    }else
+    {
+        f = fopen("enigma.txt", "r");
+    }
     fgets(cMsg, MAX_MSG_LENGTH, f);
     fclose(f);
 
@@ -117,7 +122,6 @@ void main(){
 #endif
 
     pMsg[0] = &cMsg[0];
-    pReturnBuff[0] = &cReturnBuff[0];
     dTime = omp_get_wtime();
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
@@ -126,7 +130,6 @@ void main(){
     printf("Start bytes: %lu\n",(ulPartSize*iI-1));
 #endif
         pMsg[iI] = &cMsg[(ulPartSize*iI)];
-        // pReturnBuff[iI] = &cReturnBuff[(ulPartSize*iI)];
     }
 
     #pragma omp parallel for schedule(auto)
@@ -148,11 +151,14 @@ void main(){
 
     #pragma omp parallel for ordered schedule(static)
     for (int iI = 0; iI<iNodes; iI++){
-        char cPVTBuff[MAX_MSG_LENGTH];
+        char cPVTBuff[MAX_MSG_LENGTH/N_MACHINES_MAX];
         Params xPVTEnigma = xEnigmaParams[iI];
-        FILE *fp = fopen("enigmaOut.txt", "ab");
+        if(argc>2){
+            fp = fopen(argv[2], "ab");
+        }else{
+            fp = fopen("enigmaOut.txt", "ab");
+        }
 
-        printf("TESTE NODE FOR NUMERO %i\n", iI);
         if(iI != (iNodes-1)){
             pEnigma(pMsg[iI], &cPVTBuff[0], ulPartSize, &xPVTEnigma);
         }else{
@@ -176,5 +182,5 @@ void main(){
 #endif
 
     dTime =dTime - omp_get_wtime();
-    printf("Runtime %lfs\n", dTime);
+    printf("Parallel Runtime %lfs\n", dTime);
 }
