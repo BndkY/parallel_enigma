@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-fopenmp -I.
 DEPS = p_enigma.h enigma.h
 OBJ = p_enigma.o enigma.o 
 

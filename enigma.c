@@ -121,7 +121,7 @@ char scramble(char c, Params *p)
 			else if (c==p->plug[i+1])
 				c=p->plug[i];
 		}
-#if DEBUG_ON
+#if DEBUG_FULL_ON
 		printf("Enigma params Scramble\n %i, %i, %i\n\n", p->pos[0], p->pos[1], p->pos[2]);
 #endif
 
@@ -131,7 +131,10 @@ char scramble(char c, Params *p)
 /*take a string, return encoded string*/
 void enigma(char *in, char *out, Params *p)
 {
-  int j;
+  size_t j;
+#if DEBUG_ON
+	printf("[Enigma]Partition size %lu\n", strlen(in));
+#endif
   for(j = 0; j < strlen(in); j++)
   out[j] = scramble(in[j], p);
   out[j] = '\0';
