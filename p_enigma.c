@@ -125,12 +125,24 @@ void main(){
 #if DEBUG_ON
     printf("Start bytes: %lu\n",(ulPartSize*iI-1));
 #endif
-        pMsg[iI] = &cMsg[ulPartSize*iI-1];
-        pReturnBuff[iI] = &cReturnBuff[ulPartSize*iI-1];
+        pMsg[iI] = &cMsg[(ulPartSize*iI)];
+        pReturnBuff[iI] = &cReturnBuff[(ulPartSize*iI)];
     }
 
     #pragma omp parallel for schedule(auto)
     for (int iI = 1; iI<iNodes; iI++){
+        if(ulPartSize*iI >= 200){
+            size_t ulBuffer = 0;
+            while(ulBuffer < ulPartSize*iI){
+                if((ulPartSize*iI-ulBuffer)>=200){
+                    vSetPartitionParams(&xEnigmaParams[iI], 200);
+                    ulBuffer+=200;
+                }else{
+                   vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI-ulBuffer);
+                   ulBuffer=ulPartSize*iI;
+                }
+            }
+        }else
             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
 
@@ -223,9 +235,21 @@ void main(){
     /* Decrypt pragma */
     vSetEnigma(&xEnigmaParams[0], iNodes);
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(auto)
     for (int iI = 1; iI<iNodes; iI++){
-        vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
+        if(ulPartSize*iI >= 200){
+            size_t ulBuffer = 0;
+            while(ulBuffer < ulPartSize*iI){
+                if((ulPartSize*iI-ulBuffer)>=200){
+                    vSetPartitionParams(&xEnigmaParams[iI], 200);
+                    ulBuffer+=200;
+                }else{
+                   vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI-ulBuffer);
+                   ulBuffer=ulPartSize*iI;
+                }
+            }
+        }else
+            vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
 
 #if DEBUG_ON
