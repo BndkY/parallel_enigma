@@ -126,7 +126,7 @@ void main(){
     printf("Start bytes: %lu\n",(ulPartSize*iI-1));
 #endif
         pMsg[iI] = &cMsg[(ulPartSize*iI)];
-        pReturnBuff[iI] = &cReturnBuff[(ulPartSize*iI)];
+        // pReturnBuff[iI] = &cReturnBuff[(ulPartSize*iI)];
     }
 
     #pragma omp parallel for schedule(auto)
@@ -145,141 +145,6 @@ void main(){
         }else
             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
     }
-
-#if DEBUG_ON
-    for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[ENCRYPT]State after part set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
-    }
-#endif
-
-    enigma(pMsg[0], pReturnBuff[0], &xEnigmaParams[0]);
-    enigma(pMsg[1], pReturnBuff[1], &xEnigmaParams[1]);
-    enigma(pMsg[2], pReturnBuff[2], &xEnigmaParams[2]);
-    enigma(pMsg[3], pReturnBuff[3], &xEnigmaParams[3]);
-
-    // FILE *fpC = fopen("enigmaOutCrypt.txt", "ab");
-    // if (fpC != NULL)
-    // {
-    //     fputs(pReturnBuff[0], fpC);
-    //     fclose(fpC);
-    // }
-
-    // #pragma omp parallel for schedule(auto)
-    // for (int iI = 0; iI<iNodes; iI++){
-    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
-
-    //     if(iI == iNodes-1){
-    //         enigma(pMsg[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
-    //     }else
-    //     {
-    //         pEnigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-    //     }
-
-    //     strcpy(pReturnBuff[iI], &cPVTBuff[0]);
-    // }
-
-
-
-    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
-
-//         if (iI != 0){
-//             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-//             if (iI == (iNodes-1)){
-// #if DEBUG_ON
-// 	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pMsg[iI]));
-// #endif
-//                 enigma(pMsg[iI],  &cPVTBuff[0],(size_t) strlen(pMsg[iI]), &xEnigmaParams[iI]);
-//             } else
-//             {
-//                 enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-//             }
-//         } else{
-//             enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-//         }
-
-        // if (iI != 0){
-        //     vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-        //     enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        // } else{
-        //     enigma(pMsg[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-        // }
-
-    //     strcpy(pReturnBuff[iI], &cPVTBuff[0]);
-    // }
-
-#if DEBUG_ON
-    for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[ENCRYPT]State after encrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
-    }
-#endif
-    
-    /* Encrypt pragma */
-//     # pragma omp parallel
-//     {
-//         int iID, iNbThreads;
-//         iID = omp_get_thread_num();
-// #if DEBUG_ON
-//         printf("Entering Node: %d\nLength used %i\n",iID, (ulPartSize*iID));
-// #endif
-//         // if (iID != 0)
-//         // {
-//         //     vSetPartitionParams(&xEnigmaParams[iID], (ulPartSize*iID));
-//         // }
-        
-//         //Run enigma machine
-//         enigma(pMsg[iID],  pReturnBuff[iID], &xEnigmaParams[iID]);
-//     }
-
-    //printf("%s\n",pReturnBuff[0]);
-
-    /* Decrypt pragma */
-    vSetEnigma(&xEnigmaParams[0], iNodes);
-
-    #pragma omp parallel for schedule(auto)
-    for (int iI = 1; iI<iNodes; iI++){
-        if(ulPartSize*iI >= 200){
-            size_t ulBuffer = 0;
-            while(ulBuffer < ulPartSize*iI){
-                if((ulPartSize*iI-ulBuffer)>=200){
-                    vSetPartitionParams(&xEnigmaParams[iI], 200);
-                    ulBuffer+=200;
-                }else{
-                   vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI-ulBuffer);
-                   ulBuffer=ulPartSize*iI;
-                }
-            }
-        }else
-            vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-    }
-
-#if DEBUG_ON
-    for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[DECRYPT]State after part set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
-        }   
-#endif
-
-
-//     # pragma omp parallel
-//     {
-//         int iID, iNbThreads;
-//         char cPVTBuff[MAX_MSG_LENGTH] = {0};
-//         // Params xEnigmaParams;
-//         iID = omp_get_thread_num();
-// #if DEBUG_ON
-//         printf("Entering Node: %d\n",iID);
-// #endif
-//         cPVTBuff[0] = '\n';
-//         if(iID != (iNodes-1)){
-//             pEnigma(pReturnBuff[iID], &cPVTBuff[1], ulPartSize, &xEnigmaParams[iID]);
-//         }else{
-//             enigma(pReturnBuff[iID], &cPVTBuff[1], &xEnigmaParams[iID]);
-//         }
-
-//         #pragma omp critical
-//         for (int iI=0; iI<iNodes; iI++){
-//             strcpy(pMsg[iI], &cPVTBuff[0]);
-//         }
-//     }
 
     #pragma omp parallel for ordered schedule(static)
     for (int iI = 0; iI<iNodes; iI++){
@@ -289,11 +154,9 @@ void main(){
 
         printf("TESTE NODE FOR NUMERO %i\n", iI);
         if(iI != (iNodes-1)){
-            printf("Node interno %i\n", iI);
-            pEnigma(pReturnBuff[iI], &cPVTBuff[0], ulPartSize, &xPVTEnigma);
+            pEnigma(pMsg[iI], &cPVTBuff[0], ulPartSize, &xPVTEnigma);
         }else{
-            printf("Node final %i\n", iI);
-            enigma(pReturnBuff[iI], &cPVTBuff[0], &xPVTEnigma);
+            enigma(pMsg[iI], &cPVTBuff[0], &xPVTEnigma);
         }
 
         #pragma omp ordered
@@ -303,73 +166,15 @@ void main(){
             fputs(&cPVTBuff[0], fp);
             fclose(fp);
         }
-        // strcpy(pMsg[iI], &cPVTBuff[0]);
     }
-
-    // pEnigma(pReturnBuff[0], pMsg[0], ulPartSize, &xEnigmaParams[0]);
-    // pEnigma(pReturnBuff[1], pMsg[1], ulPartSize, &xEnigmaParams[1]);
-    // pEnigma(pReturnBuff[2], pMsg[2], ulPartSize, &xEnigmaParams[2]);
-    // enigma(pReturnBuff[3], pMsg[3], &xEnigmaParams[3]);
-
-
-    // #pragma omp parallel for schedule(auto)
-    // for (int iI = 0; iI<iNodes; iI++){
-    //     char cPVTBuff[MAX_MSG_LENGTH] = {0};
-
-    //     if(iI == iNodes-1){
-    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], &xEnigmaParams[iI]);
-    //     }else{
-    //         pEnigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-    //     }
-    //     strcpy(pMsg[iI], &cPVTBuff[0]);
-    // }
-
-
-    // #pragma omp parallel for schedule(auto)
-    // for (int iI = 0; iI<iNodes; iI++)
-    // {
-    //     char cPVTBuff[MAX_MSG_LENGTH];
-
-//         if (iI != 0){
-//             vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-//             if (iI == (iNodes-1)){
-// #if DEBUG_ON
-// 	            printf("[pragma for]Partition size %lu\n", (size_t) strlen(pReturnBuff[iI]));
-// #endif
-//                 enigma(pReturnBuff[iI],  &cPVTBuff[0],(size_t) strlen(pReturnBuff[iI]), &xEnigmaParams[iI]);
-//             } else
-//             {
-//                 enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-//             }
-//         } else{
-//             enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-//         }
-
-    //     if (iI != 0){
-    //         vSetPartitionParams(&xEnigmaParams[iI], ulPartSize*iI);
-    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-    //     } else{
-    //         enigma(pReturnBuff[iI],  &cPVTBuff[0], ulPartSize, &xEnigmaParams[iI]);
-    //     }
-
-    //     strcpy(pMsg[iI], &cPVTBuff[0]);
-    // }
 
 
 #if DEBUG_ON
     for (int iCount = 0; iCount<N_MACHINES_MAX; iCount++){
-        printf("[DECRYPT]State after decrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
-        }   
+        printf("[ENCRYPT]State after encrypt set of %d: %c %c %c\n", iCount, xEnigmaParams[iCount].pos[0], xEnigmaParams[iCount].pos[1], xEnigmaParams[iCount].pos[2]);
+    }
 #endif
 
-    //printf("%s\n",pMsg[0]);
     dTime =dTime - omp_get_wtime();
-    /* Write output to file */
-    // FILE *fp = fopen("enigmaOut.txt", "ab");
-    // if (fp != NULL)
-    // {
-    //     fputs(pMsg[0], fp);
-    //     fclose(fp);
-    // }
     printf("Runtime %lfs\n", dTime);
 }
